@@ -119,12 +119,16 @@ class Truss{
 				done = true;
 			
 				float fx = 0, fy = 0;
-				vector<Member> unknowns;
-				vector<int> unknowns_idx;
+				int unknown_count = 0;
+				vector<Member> unknown_members;
+				PinSupport unknown_pin;
+				RollerSupport unknown_roller;
+				vector<int> unknowns_idx; // only for unknown members
 
 				// unknowns amongst pin supports
 				if (!Joints[i]->connecting_roller->fy){
-					unknowns.push_back(connecting_roller);
+					unknown_roller = connecting_roller;
+					unknown_count++;
 				}else{
 					fy += Joints[i]->connecting_roller->fy;
 				}
@@ -132,7 +136,8 @@ class Truss{
 
 				// unknowns amongst roller supports
 				if (!Joints[i]->connecting_pin->fx){
-					unknowns.push_back(connecting_pin);
+					unknown_pin = connecting_pin;
+					unknown_count++;
 				}else{
 					fx += Joints[i]->connecting_pin->fx;
 					fx += Joints[i]->connecting_pin->fy;
@@ -141,8 +146,9 @@ class Truss{
 				// unknowns amongst members
 				for(int j=0; j<Joints[i]->members.size(); j++){
 					if(!Joints[i]->members[j]->fx){
-						unknowns.push_back(Joints[i]->members[j]);
+						unknown_members.push_back(Joints[i]->members[j]);
 						unknowns_idx.push_back(j);
+						unknown_count++;
 					}
 					else {
 						fx += Joints[i]->members[j]->fx;
@@ -150,7 +156,7 @@ class Truss{
 					}
 				}
 
-				if (unknowns.size() < 3 && 0 < unknowns.size()){
+				if (unknown_count.size() < 3 && 0 < unknown_count.size()){
 
 					// calculating external forces
 					for(int j=0; j<Joints[i]->forces.size(); j++){
